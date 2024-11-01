@@ -20,6 +20,8 @@ if (Astro.request.method === "POST") {
         } else {
           // Construct clean URL - maintain only the essential path
           cleanUrl = `https://www.tiktok.com${urlObj.pathname}`;
+          // Clear error since submission is successful
+          error = "";
           // Redirect to the clean URL
           return Astro.redirect(cleanUrl);
         }
@@ -78,7 +80,7 @@ if (Astro.request.method === "POST") {
               )
             }
 
-            <button type="submit" class="btn btn-primary w-full"> Clean URL </button>
+            <button type="submit" class="btn btn-primary w-full">Clean URL</button>
           </form>
 
           <!-- Alternative client-side handling -->
@@ -86,6 +88,9 @@ if (Astro.request.method === "POST") {
             // Also add client-side handling for better UX
             document.querySelector("form")?.addEventListener("submit", async (e) => {
               e.preventDefault();
+
+              // Remove any existing error message immediately when submitting
+              document.querySelector(".alert-error")?.remove();
 
               const input = document.querySelector('input[name="tiktok-url"]') as HTMLInputElement;
               const url = input.value;
@@ -100,8 +105,11 @@ if (Astro.request.method === "POST") {
                 // Open in new tab
                 window.open(cleanUrl, "_blank");
 
-                // Clear the input
+                // Clear the input after successful submission
                 input.value = "";
+
+                // Ensure any error message is removed after success
+                document.querySelector(".alert-error")?.remove();
               } catch (error) {
                 // Show error in UI
                 const errorDiv = document.createElement("div");
@@ -120,6 +128,11 @@ if (Astro.request.method === "POST") {
                 document.querySelector("form")?.appendChild(errorDiv);
               }
             });
+
+            // Also clear error when input changes
+            document.querySelector('input[name="tiktok-url"]')?.addEventListener("input", () => {
+              document.querySelector(".alert-error")?.remove();
+            });
           </script>
         </div>
       </div>
@@ -129,7 +142,7 @@ if (Astro.request.method === "POST") {
           <h2 class="card-title">How it works</h2>
           <ul class="steps steps-vertical">
             <li class="step step-primary">Paste a TikTok video URL</li>
-            <li class="step step-primary">Click "Clean URL</li>
+            <li class="step step-primary">Click "Clean URL"</li>
             <li class="step step-primary">Get your clean URL</li>
             <li class="step step-primary">View directly in browser</li>
           </ul>

@@ -9,8 +9,8 @@ export default defineConfig({
       VitePWA({
         registerType: 'autoUpdate',
         manifest: {
-          name: 'TikTok URL Cleaner',
-          short_name: 'TikTok Clean',
+          name: 'SeeTok',
+          short_name: 'SeeTok',
           description: 'Clean TikTok URLs for browser viewing',
           theme_color: '#ffffff',
           background_color: '#ffffff',

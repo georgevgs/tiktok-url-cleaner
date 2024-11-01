@@ -1,16 +1,84 @@
 ---
+import Layout from "../layouts/Layout.astro";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
 
+// Handle form submission
+if (Astro.request.method === "POST") {
+  try {
+    const data = await Astro.request.formData();
+    const url = data.get("tiktok-url");
+
+    if (url && typeof url === "string") {
+      // Parse the URL
+      const urlObj = new URL(url);
+      // Keep only the path, removing all query parameters
+      const cleanUrl = `https://www.tiktok.com${urlObj.pathname}`;
+      // Redirect to the clean URL
+      return Astro.redirect(cleanUrl);
+    }
+  } catch (error) {
+    console.error("Error processing URL:", error);
+  }
+}
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<Layout title="TikTok URL Cleaner">
+  <Header />
+
+  <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+    <div class="px-4 py-6 sm:px-0">
+      <div class="bg-white shadow rounded-lg p-6">
+        <form method="POST" class="space-y-6">
+          <div>
+            <label for="tiktok-url" class="block text-sm font-medium text-gray-700"> TikTok URL </label>
+            <div class="mt-1">
+              <input
+                type="url"
+                name="tiktok-url"
+                id="tiktok-url"
+                required
+                placeholder="https://www.tiktok.com/@username/video/1234567890"
+                class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              />
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+            Clean URL
+          </button>
+        </form>
+
+        <div class="mt-6">
+          <h2 class="text-lg font-medium text-gray-900">How it works</h2>
+          <ul class="mt-2 text-sm text-gray-600 list-disc list-inside space-y-1">
+            <li>Paste a TikTok video URL</li>
+            <li>Click "Clean URL" to remove tracking parameters</li>
+            <li>You'll be redirected to the clean version</li>
+            <li>View the video directly in your browser</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <Footer />
+</Layout>
+
+<script>
+  // Register service worker
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker
+        .register("/sw.js")
+        .then((registration) => {
+          console.log("ServiceWorker registration successful");
+        })
+        .catch((err) => {
+          console.log("ServiceWorker registration failed: ", err);
+        });
+    });
+  }
+</script>

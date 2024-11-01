@@ -4,7 +4,7 @@ interface Props {
 }
 
 const { title } = Astro.props;
-const description = "Clean TikTok URLs for better browser viewing experience";
+const description = "Clean TikTok URLs for better viewing";
 const siteName = "SeeTok";
 const siteUrl = "https://seetok.eu";
 ---
@@ -15,7 +15,7 @@ const siteUrl = "https://seetok.eu";
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
 
-    <!-- Favicon setup - using what we have -->
+    <!-- Favicon setup -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" type="image/png" sizes="512x512" href="/icon-512x512.png" />
     <link rel="icon" type="image/png" sizes="192x192" href="/icon-192x192.png" />
@@ -31,17 +31,22 @@ const siteUrl = "https://seetok.eu";
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content={siteUrl} />
-    <meta property="og:title" content={title} />
+    <meta property="og:title" content={siteName} />
     <meta property="og:description" content={description} />
-    <meta property="og:image" content={`${siteUrl}/icon-512x512.png`} />
+    <meta property="og:image" content={`${siteUrl}/social-preview.png`} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
     <meta property="og:site_name" content={siteName} />
 
     <!-- Twitter -->
-    <meta property="twitter:card" content="summary" />
-    <meta property="twitter:url" content={siteUrl} />
-    <meta property="twitter:title" content={title} />
-    <meta property="twitter:description" content={description} />
-    <meta property="twitter:image" content={`${siteUrl}/icon-512x512.png`} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content={siteUrl} />
+    <meta name="twitter:title" content={siteName} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={`${siteUrl}/social-preview.png`} />
+
+    <!-- iMessage specific (uses og:image) -->
+    <meta property="og:image:alt" content="SeeTok - Clean TikTok URLs" />
 
     <!-- PWA tags -->
     <link rel="manifest" href="/manifest.json" />

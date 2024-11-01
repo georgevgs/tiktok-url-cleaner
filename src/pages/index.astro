@@ -3,6 +3,9 @@ import Layout from "../layouts/Layout.astro";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
 
+let error = "";
+let cleanUrl = "";
+
 // Handle form submission
 if (Astro.request.method === "POST") {
   try {
@@ -10,75 +13,147 @@ if (Astro.request.method === "POST") {
     const url = data.get("tiktok-url");
 
     if (url && typeof url === "string") {
-      // Parse the URL
-      const urlObj = new URL(url);
-      // Keep only the path, removing all query parameters
-      const cleanUrl = `https://www.tiktok.com${urlObj.pathname}`;
-      // Redirect to the clean URL
-      return Astro.redirect(cleanUrl);
+      try {
+        const urlObj = new URL(url);
+        if (!urlObj.hostname.includes("tiktok.com")) {
+          error = "Please enter a valid TikTok URL";
+        } else {
+          // Construct clean URL - maintain only the essential path
+          cleanUrl = `https://www.tiktok.com${urlObj.pathname}`;
+          // Redirect to the clean URL
+          return Astro.redirect(cleanUrl);
+        }
+      } catch (e) {
+        error = "Invalid URL format";
+      }
     }
-  } catch (error) {
-    console.error("Error processing URL:", error);
+  } catch (e) {
+    error = "Error processing your request";
   }
 }
 ---
 
 <Layout title="TikTok URL Cleaner">
-  <Header />
+  <div class="container mx-auto px-4 py-8">
+    <Header />
 
-  <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-    <div class="px-4 py-6 sm:px-0">
-      <div class="bg-white shadow rounded-lg p-6">
-        <form method="POST" class="space-y-6">
-          <div>
-            <label for="tiktok-url" class="block text-sm font-medium text-gray-700"> TikTok URL </label>
-            <div class="mt-1">
+    <main class="max-w-xl mx-auto">
+      <div class="card bg-base-100 shadow-xl">
+        <div class="card-body">
+          <form method="POST" class="space-y-4">
+            <div class="form-control">
+              <label class="label">
+                <span class="label-text">TikTok URL</span>
+              </label>
               <input
                 type="url"
                 name="tiktok-url"
-                id="tiktok-url"
+                placeholder="Paste your TikTok URL here"
+                class="input input-bordered w-full"
                 required
-                placeholder="https://www.tiktok.com/@username/video/1234567890"
-                class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                autocomplete="off"
+                spellcheck="false"
+                data-form-type="other"
+                data-lpignore="true"
               />
             </div>
-          </div>
 
-          <button
-            type="submit"
-            class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-            Clean URL
-          </button>
-        </form>
+            {
+              error && (
+                <div class="alert alert-error">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="stroke-current shrink-0 h-6 w-6"
+                    fill="none"
+                    viewBox="0 0 24 24">
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                  <span>{error}</span>
+                </div>
+              )
+            }
 
-        <div class="mt-6">
-          <h2 class="text-lg font-medium text-gray-900">How it works</h2>
-          <ul class="mt-2 text-sm text-gray-600 list-disc list-inside space-y-1">
-            <li>Paste a TikTok video URL</li>
-            <li>Click "Clean URL" to remove tracking parameters</li>
-            <li>You'll be redirected to the clean version</li>
-            <li>View the video directly in your browser</li>
+            <button type="submit" class="btn btn-primary w-full"> Clean URL </button>
+          </form>
+
+          <!-- Alternative client-side handling -->
+          <script>
+            // Also add client-side handling for better UX
+            document.querySelector("form")?.addEventListener("submit", async (e) => {
+              e.preventDefault();
+
+              const input = document.querySelector('input[name="tiktok-url"]') as HTMLInputElement;
+              const url = input.value;
+
+              try {
+                const urlObj = new URL(url);
+                if (!urlObj.hostname.includes("tiktok.com")) {
+                  throw new Error("Please enter a valid TikTok URL");
+                }
+
+                const cleanUrl = `https://www.tiktok.com${urlObj.pathname}`;
+                // Open in new tab
+                window.open(cleanUrl, "_blank");
+
+                // Clear the input
+                input.value = "";
+              } catch (error) {
+                // Show error in UI
+                const errorDiv = document.createElement("div");
+                errorDiv.className = "alert alert-error mt-4";
+                errorDiv.innerHTML = `
+                  <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span>${error instanceof Error ? error.message : "Invalid URL"}</span>
+                `;
+
+                // Remove any existing error message
+                document.querySelector(".alert-error")?.remove();
+
+                // Add new error message
+                document.querySelector("form")?.appendChild(errorDiv);
+              }
+            });
+          </script>
+        </div>
+      </div>
+
+      <div class="card bg-base-100 shadow-xl mt-8">
+        <div class="card-body">
+          <h2 class="card-title">How it works</h2>
+          <ul class="steps steps-vertical">
+            <li class="step step-primary">Paste a TikTok video URL</li>
+            <li class="step step-primary">Click "Clean URL</li>
+            <li class="step step-primary">Get your clean URL</li>
+            <li class="step step-primary">View directly in browser</li>
           </ul>
         </div>
       </div>
-    </div>
-  </main>
+    </main>
 
-  <Footer />
+    <Footer />
+  </div>
+
+  <script>
+    // Register service worker
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker
+          .register("/sw.js")
+          .then((registration) => {
+            console.log("ServiceWorker registered: ", registration);
+            registration.update();
+          })
+          .catch((error) => {
+            console.error("ServiceWorker registration failed:", error);
+          });
+      });
+    }
+  </script>
 </Layout>
-
-<script>
-  // Register service worker
-  if ("serviceWorker" in navigator) {
-    window.addEventListener("load", () => {
-      navigator.serviceWorker
-        .register("/sw.js")
-        .then((registration) => {
-          console.log("ServiceWorker registration successful");
-        })
-        .catch((err) => {
-          console.log("ServiceWorker registration failed: ", err);
-        });
-    });
-  }
-</script>

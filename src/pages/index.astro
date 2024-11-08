@@ -18,11 +18,8 @@ if (Astro.request.method === "POST") {
         if (!urlObj.hostname.includes("tiktok.com")) {
           error = "Please enter a valid TikTok URL";
         } else {
-          // Construct clean URL - maintain only the essential path
           cleanUrl = `https://www.tiktok.com${urlObj.pathname}`;
-          // Clear error since submission is successful
           error = "";
-          // Redirect to the clean URL
           return Astro.redirect(cleanUrl);
         }
       } catch (e) {
@@ -47,17 +44,39 @@ if (Astro.request.method === "POST") {
               <label class="label">
                 <span class="label-text">TikTok URL</span>
               </label>
-              <input
-                type="url"
-                name="tiktok-url"
-                placeholder="Paste your TikTok URL here"
-                class="input input-bordered w-full"
-                required
-                autocomplete="off"
-                spellcheck="false"
-                data-form-type="other"
-                data-lpignore="true"
-              />
+              <div class="relative">
+                <input
+                  type="url"
+                  name="tiktok-url"
+                  id="tiktok-url"
+                  placeholder="Paste your TikTok URL here"
+                  class="input input-bordered w-full pr-12"
+                  required
+                  autocomplete="off"
+                  spellcheck="false"
+                  data-form-type="other"
+                  data-lpignore="true"
+                />
+                <button
+                  type="button"
+                  class="btn btn-ghost btn-sm absolute right-1 top-1/2 -translate-y-1/2"
+                  id="paste-button"
+                  title="Paste from clipboard">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-5 w-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                    ></path>
+                  </svg>
+                </button>
+              </div>
             </div>
 
             {
@@ -83,13 +102,38 @@ if (Astro.request.method === "POST") {
             <button type="submit" class="btn btn-primary w-full">Clean URL</button>
           </form>
 
-          <!-- Alternative client-side handling -->
           <script>
-            // Also add client-side handling for better UX
+            // Paste button functionality
+            const pasteButton = document.getElementById("paste-button");
+            const urlInput = document.getElementById("tiktok-url") as HTMLInputElement;
+
+            if (pasteButton && urlInput instanceof HTMLInputElement) {
+              pasteButton.addEventListener("click", async () => {
+                try {
+                  const text = await navigator.clipboard.readText();
+                  urlInput.value = text;
+                  // Focus the input after pasting
+                  urlInput.focus();
+                  // Remove any existing error message
+                  document.querySelector(".alert-error")?.remove();
+                } catch (err) {
+                  // Show error if clipboard access fails
+                  const errorDiv = document.createElement("div");
+                  errorDiv.className = "alert alert-error mt-4";
+                  errorDiv.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>Unable to access clipboard. Please paste manually.</span>
+                  `;
+                  document.querySelector("form")?.appendChild(errorDiv);
+                }
+              });
+            }
+
+            // Client-side form handling
             document.querySelector("form")?.addEventListener("submit", async (e) => {
               e.preventDefault();
-
-              // Remove any existing error message immediately when submitting
               document.querySelector(".alert-error")?.remove();
 
               const input = document.querySelector('input[name="tiktok-url"]') as HTMLInputElement;
@@ -102,16 +146,10 @@ if (Astro.request.method === "POST") {
                 }
 
                 const cleanUrl = `https://www.tiktok.com${urlObj.pathname}`;
-                // Open in new tab
                 window.open(cleanUrl, "_blank");
-
-                // Clear the input after successful submission
                 input.value = "";
-
-                // Ensure any error message is removed after success
                 document.querySelector(".alert-error")?.remove();
               } catch (error) {
-                // Show error in UI
                 const errorDiv = document.createElement("div");
                 errorDiv.className = "alert alert-error mt-4";
                 errorDiv.innerHTML = `
@@ -121,15 +159,12 @@ if (Astro.request.method === "POST") {
                   <span>${error instanceof Error ? error.message : "Invalid URL"}</span>
                 `;
 
-                // Remove any existing error message
                 document.querySelector(".alert-error")?.remove();
-
-                // Add new error message
                 document.querySelector("form")?.appendChild(errorDiv);
               }
             });
 
-            // Also clear error when input changes
+            // Clear error on input change
             document.querySelector('input[name="tiktok-url"]')?.addEventListener("input", () => {
               document.querySelector(".alert-error")?.remove();
             });
